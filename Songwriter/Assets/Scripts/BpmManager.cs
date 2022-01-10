@@ -210,7 +210,7 @@ public class BpmManager : MonoBehaviour
     
     void DeleteNotesAtTimeStamp()
     {
-        Bars[currentBar].Timestamps[currentTimestampInBar].notes.Clear();
+        Bars[currentBar].Timestamps[currentTimestampInBar].Notes.Clear();
         RecorderCanvasManager.RemoveNotesAtTimeStamp(currentBar,currentTimestampInBar);
     }
     
@@ -220,9 +220,9 @@ public class BpmManager : MonoBehaviour
         if (currentBar >= Bars.Count)
             return;*/
         
-        for (int i = 0; i < Bars[currentBar].Timestamps[currentTimestampInBar].notes.Count; i++)
+        for (int i = 0; i < Bars[currentBar].Timestamps[currentTimestampInBar].Notes.Count; i++)
         {
-            drums.PlayDrumNote(Bars[currentBar].Timestamps[currentTimestampInBar].notes[i]);
+            drums.PlayDrumNote(Bars[currentBar].Timestamps[currentTimestampInBar].Notes[i]);
         }
     }
     
@@ -238,14 +238,29 @@ public class BpmManager : MonoBehaviour
         // each bar contains dictionary timestamps:  int indexOf32x, IntVector3(instrument, note, octave)
         var tempCurrentTimeStampAndBar = QuantizedTimeStamp(currentTimestampInBar, currentBar);
         var timeStamp = Bars[currentBar].Timestamps[tempCurrentTimeStampAndBar.x];
-        if (!timeStamp.notes.Contains(note))
+        if (!timeStamp.Notes.Contains(note))
         {
-            timeStamp.notes.Add(note);
+            if (currentTimestampInBar >= tempCurrentTimeStampAndBar.x)
+                timeStamp.Notes.Add(note);
+            else
+                StartCoroutine(SaveNoteWhenBarIsOver(timeStamp, note));
+                
 
             RecorderCanvasManager.PlaceNote(tempCurrentTimeStampAndBar.y, tempCurrentTimeStampAndBar.x, note,  2);
         }
     }
 
+    IEnumerator SaveNoteWhenBarIsOver(Timestamp timeStamp, int note)
+    {
+        int oldBar = currentBar;
+        
+        while (currentBar == oldBar)
+        {
+            yield return null;
+        }
+        timeStamp.Notes.Add(note);
+    }
+    
     Vector2Int QuantizedTimeStamp(int timeStampToQuantize, int bar)
     {
         int result = timeStampToQuantize;
@@ -335,5 +350,14 @@ public class Bar
 public class Timestamp
 {
     public List<int> notes;
+
+    public List<int> Notes
+    {
+        get { return notes; }
+        set
+        {
+            notes = value;
+        }
+    }
     public List<RectTransform> notesVisuals;
 }
