@@ -29,11 +29,13 @@ namespace Editor
             barsAmount = EditorGUILayout.IntField("Bars Amount: ", barsAmount);
             _compositionData = (CompositionData)EditorGUILayout.ObjectField(_compositionData, typeof(ScriptableObject), true);
 
+            if (!_compositionData)
+                return;
+            
             if (GUI.Button(new Rect(20,65, 40,20), "Clear"))
             {
                 ClearBars();
             }
-            
             DrawPianoRollNotes();
         }
 
